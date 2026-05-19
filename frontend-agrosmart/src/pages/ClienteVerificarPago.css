@@ -1,0 +1,104 @@
+
+.contenedor-pagina-verificacion {
+  min-height: 100vh;
+  background-color: #000b18;
+  position: relative;
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+.contenedor-pagina-verificacion::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: url('../assets/Fondo-carrito.png');
+  background-size: cover; background-position: center;
+  z-index: 0; opacity: 0.5; pointer-events: none;
+}
+
+
+.contenido-pagina-verificacion {
+  position: relative; z-index: 10; max-width: 1200px; margin: 0 auto;
+  padding: 40px 20px;
+  flex: 1; display: flex; justify-content: center; align-items: center;
+}
+
+
+.tarjeta-central-verificacion {
+  background: rgba(0, 18, 46, 0.7); backdrop-filter: blur(25px);
+  border: 1px solid rgba(0, 221, 235, 0.3); border-radius: 16px;
+  padding: 35px 40px;
+  max-width: 550px;
+  width: 100%; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+  box-sizing: border-box;
+}
+
+
+.icono-animado {
+  width: 80px; height: 80px;
+  border-radius: 50%; margin: 0 auto 15px auto;
+  position: relative; display: flex; justify-content: center; align-items: center;
+}
+
+@keyframes agro-pulse { 0% { box-shadow: 0 0 10px rgba(0, 221, 235, 0.6); } 50% { box-shadow: 0 0 30px rgba(0, 221, 235, 0.9); } 100% { box-shadow: 0 0 10px rgba(0, 221, 235, 0.6); } }
+@keyframes pulse-error { 0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); } 50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.9); } 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); } }
+
+.icono-animado.exito { border: 3px solid #28C76F; animation: agro-pulse 2s infinite ease-in-out; color: #28C76F; font-size: 4rem; }
+.icono-animado.exito::after { content: '✓'; font-weight: bold; }
+.icono-animado.error { border: 3px solid #ef4444; animation: pulse-error 2s infinite ease-in-out; color: #ef4444; font-size: 4rem; }
+.icono-animado.error::after { content: '✕'; font-weight: bold; }
+.icono-animado.procesando { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #00ddeb; animation: agro-spin 1s infinite linear; }
+@keyframes agro-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+.agro-tech-h1 { font-size: 2rem; font-weight: bold; color: #28C76F; margin: 0 0 8px 0; text-shadow: 0 0 10px rgba(40, 199, 111, 0.4); }
+.agro-tech-h1.orange { color: #f97316; }
+.agro-tech-p { color: #cbd5e1; font-size: 0.95rem; margin: 0 0 15px 0; }
+.agro-tech-p-soft { color: #94a3b8; font-size: 0.85rem; margin-bottom: 20px; }
+
+
+.bloque-voucher {
+  background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 221, 235, 0.3);
+  border-radius: 12px; padding: 15px 20px; margin: 15px 0; text-align: left;
+}
+.divisor-recibo { height: 1px; background: rgba(0, 221, 235, 0.2); margin: 12px 0; }
+
+.voucher-fila { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 8px; font-size: 0.9rem; }
+.voucher-fila .label { color: #94a3b8; }
+.voucher-fila .valor { color: white; text-align: right; }
+.voucher-fila .strong-cyan { color: #00ddeb; font-weight: bold; }
+
+
+.titulo-detalle { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0; text-align: left; }
+.lista-productos-compacta {
+  max-height: 100px;
+  overflow-y: auto; padding-right: 5px;
+}
+.lista-productos-compacta::-webkit-scrollbar { width: 4px; }
+.lista-productos-compacta::-webkit-scrollbar-thumb { background: rgba(0, 221, 235, 0.5); border-radius: 4px; }
+
+.item-comprado-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 0.85rem; color: #cbd5e1; text-align: left; }
+.item-cant { color: #00ddeb; font-weight: bold; min-width: 20px; }
+.item-nombre { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-precio { color: white; font-weight: bold; }
+
+.instrucciones-sucursal { color: #00ddeb; font-size: 0.9rem; margin-bottom: 20px; }
+
+
+.botones-verificacion { display: flex; gap: 10px; justify-content: center; }
+.btn-agro-primario {
+  background: #00ddeb; color: #00122e; border: none; font-weight: bold;
+  padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.95rem;
+}
+.btn-agro-primario:hover { background: #28C76F; transform: translateY(-2px); }
+.btn-agro-primario.cyan-outline { background: transparent; border: 1px solid #00ddeb; color: #00ddeb; }
+.btn-agro-primario.cyan-outline:hover { background: #00ddeb; color: #00122e; }
+
+.btn-agro-secundario {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.95rem;
+}
+.btn-agro-secundario:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+.flex-row { display: flex; flex-direction: row; }
+.gap-10 { gap: 10px; }
+.animacion-entrada { animation: agroPopIn 0.4s ease-out; }
+@keyframes agroPopIn { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }

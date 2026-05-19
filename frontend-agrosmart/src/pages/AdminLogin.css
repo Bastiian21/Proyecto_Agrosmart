@@ -1,0 +1,44 @@
+.admin-login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000b18;
+  position: relative;
+}
+
+
+.admin-login-container::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: url('../assets/Fondo-backoffice.png');
+  background-size: cover; background-position: center; opacity: 0.2; pointer-events: none;
+}
+
+.admin-login-card {
+  background: rgba(0, 18, 46, 0.85); backdrop-filter: blur(25px);
+  border: 1px solid rgba(0, 221, 235, 0.2); border-radius: 20px;
+  padding: 50px; width: 100%; max-width: 450px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
+  position: relative; z-index: 10; display: flex; flex-direction: column;
+}
+
+.admin-login-header { text-align: center; margin-bottom: 30px; }
+.admin-logo { height: 60px; margin-bottom: 20px; }
+.admin-login-header h2 { color: white; font-size: 1.8rem; margin: 0 0 10px 0; }
+.admin-login-header p { color: #64748b; font-size: 0.9rem; margin: 0; }
+
+.admin-login-form { display: flex; flex-direction: column; gap: 20px; }
+.input-error { border-color: #ff4757 !important; background: rgba(255, 71, 87, 0.05) !important; }
+.error-message { color: #ff4757; font-size: 0.85rem; text-align: center; margin: 0; }
+
+.btn-admin-primary {
+  background: #00ddeb; color: #00122e; border: none; border-radius: 10px;
+  padding: 15px; font-weight: bold; font-size: 1rem; cursor: pointer;
+  transition: all 0.3s; box-shadow: 0 0 15px rgba(0, 221, 235, 0.3);
+}
+.btn-admin-primary:hover { background: white; box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+
+.btn-volver-inicio {
+  background: none; border: none; color: #64748b; font-size: 0.9rem; margin-top: 30px; cursor: pointer; transition: 0.3s;
+}
+.btn-volver-inicio:hover { color: white; }

@@ -1,0 +1,139 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+.background-agro {
+  min-height: 100vh;
+  width: 100vw;
+
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(135deg, #00122e 0%, #001d3d 40%, #004d2e 100%);
+  background-size: 25px 25px, 100% 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.tarjeta-login {
+  background-color: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 90%;
+  max-width: 500px;
+}
+
+
+.logo-img-central {
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+
+.botones-container {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+
+.btn-uiverse {
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #ffffff;
+  display: flex;
+  font-size: 16px;
+  font-weight: 600;
+  justify-content: center;
+  line-height: 1em;
+  min-width: 180px;
+  padding: 3px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex: 1;
+}
+
+
+.btn-uiverse span {
+  color: #ffffff;
+  padding: 14px 20px;
+  border-radius: 6px;
+  width: 100%;
+  height: 100%;
+  transition: 300ms;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+
+.btn-cliente {
+
+  background-image: linear-gradient(144deg, #28C76F 0%, #28C76F 80%, #0052D4 100%);
+  box-shadow: rgba(40, 199, 111, 0.3) 0 15px 30px -5px;
+}
+
+.btn-cliente span {
+
+  background-color: #0d5e35;
+}
+
+
+.btn-backoffice {
+
+  background-image: linear-gradient(144deg, #0052D4 0%, #0052D4 80%, #28C76F 100%);
+  box-shadow: rgba(0, 82, 212, 0.3) 0 15px 30px -5px;
+}
+
+.btn-backoffice span {
+
+  background-color: #022b6b;
+}
+
+
+
+.btn-uiverse:hover span {
+  background: transparent;
+}
+
+.btn-uiverse:active {
+  transform: scale(0.95);
+}
+
+
+
+.animacion-entrada {
+  animation: aparecer 0.5s ease-out forwards;
+}
+
+@keyframes aparecer {
+  0% { opacity: 0; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+
+.animacion-salida {
+  animation: desaparecer 0.4s ease-in forwards;
+  pointer-events: none;
+}
+
+@keyframes desaparecer {
+  0% { opacity: 1; filter: blur(0px); transform: scale(1); }
+  100% { opacity: 0; filter: blur(10px); transform: scale(0.95); }
+}
