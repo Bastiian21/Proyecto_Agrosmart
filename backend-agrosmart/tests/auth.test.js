@@ -1,6 +1,7 @@
 // Pruebas unitarias — Componente C1: Autenticación y usuarios (/api/auth)
 // Corresponden a los casos de prueba CA001-CA006 de 3.1.4 Casos de Prueba - AgroSmart.xlsx
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const { randomRut, randomSuffix } = require('./helpers');
 
 const BASE_URL = 'http://localhost:3000';
@@ -71,6 +72,11 @@ describe('C1 - Autenticación y usuarios', () => {
         expect(typeof res.body.token).toBe('string');
         expect(res.body.usuario.email).toBe(email);
         expect(res.body.usuario).toHaveProperty('direccion_region');
+
+        // Se imprime el token y su contenido decodificado como evidencia visual de la prueba.
+        const payload = jwt.decode(res.body.token);
+        console.log('\n    Token JWT recibido:', res.body.token);
+        console.log('    Payload decodificado:', payload);
     });
 
     test('CA005 - debería rechazar el login con contraseña incorrecta', async () => {
