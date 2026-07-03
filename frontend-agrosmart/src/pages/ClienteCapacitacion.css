@@ -5,24 +5,21 @@
   display: flex;
   flex-direction: column;
   color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: clip;
-  background-color: #000b18;
-  position: relative;
-
-
-
+  background-color: #001428;
   background-image:
-    linear-gradient(to right, rgba(0, 11, 24, 0.92) 0%, rgba(0, 11, 24, 0.7) 45%, rgba(0, 11, 24, 0.55) 100%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 18, 46, 0.97) 0%, rgba(0, 18, 46, 0.72) 40%, rgba(0, 15, 35, 0.22) 100%),
     url('../assets/Fondo-capacitacion.png');
-  background-size: cover, cover;
-  background-position: center, center center;
-  background-repeat: no-repeat, no-repeat;
-  background-attachment: fixed, fixed;
+  background-size: 25px 25px, 100% 100%, cover;
+  background-position: 0 0, center, center 30%;
+  background-attachment: fixed;
+  position: relative;
 }
 
-.container-lg { width: 95%; max-width: 1400px; margin: 0 auto; }
-.animacion-portal-entrada { animation: subir-suave 0.5s ease-out forwards; }
+.cap-container { width: 95%; max-width: 1400px; margin: 0 auto; }
+.cap-animacion-entrada { animation: subir-suave 0.5s ease-out forwards; }
 @keyframes subir-suave { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
 
 .text-gradient { background: linear-gradient(144deg, #28C76F 0%, #00ddeb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(0, 221, 235, 0.3)); }
@@ -33,22 +30,27 @@
 
 .cap-hero-section {
   width: 100%;
-  min-height: 60vh;
   position: relative;
-  display: flex;
-  align-items: center;
+  overflow: hidden;
 }
 
+/* Solo protege el texto — la imagen ya viene del contenedor de página */
 .cap-hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to right, rgba(0, 11, 24, 0.95) 0%, rgba(0, 11, 24, 0.6) 50%, transparent 100%),
-              linear-gradient(to top, rgba(0, 11, 24, 1) 0%, transparent 40%);
+  background:
+    linear-gradient(to bottom,
+      rgba(0, 18, 46, 0.55) 0%,
+      rgba(0, 18, 46, 0.10) 30%,
+      transparent 55%
+    );
   z-index: 1;
 }
 
 .cap-hero-content {
   position: relative; z-index: 2;
-  width: 100%; padding-top: 120px;
+  width: 100%;
+  padding-top: 140px;
+  padding-bottom: 70px;
 }
 
 .cap-tag-title { color: #00ddeb; font-size: 0.9rem; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; display: block;}
@@ -65,8 +67,8 @@
 .cap-stat { display: flex; align-items: center; gap: 15px; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }
 .cap-stat:last-child { border-right: none; padding-right: 0; }
 .stat-icon { font-size: 1.8rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; }
-.stat-num { font-size: 1.8rem; font-weight: 800; color: white; }
-.stat-label { font-size: 0.8rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px;}
+.cap-stat-num { font-size: 1.8rem; font-weight: 800; color: white; }
+.cap-stat-label { font-size: 0.8rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; }
 
 
 
@@ -107,8 +109,8 @@
 
 .cat-product-card {
   display: flex;
-  background: rgba(8, 22, 45, 0.7); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px;
+  background: rgba(0, 12, 32, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 16px;
   overflow: hidden; height: 260px;
   transition: transform 0.3s ease, border-color 0.3s ease;
 }

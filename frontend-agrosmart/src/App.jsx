@@ -9,10 +9,12 @@ import { CartProvider } from './context/CartContext';
 import ClienteHome from "./pages/ClienteHome";
 import ClienteCatalogo from './pages/ClienteCatalogo';
 import ClienteCarrito from './pages/ClienteCarrito';
+import ClienteCheckout from './pages/ClienteCheckout';
 import ClienteSolicitud from './pages/ClienteSolicitud';
 import ClienteCapacitacion from './pages/ClienteCapacitacion';
 import ClienteLogin from './pages/ClienteLogin';
 import ClienteVerificarPago from './pages/ClienteVerificarPago';
+import ClienteMisPedidos from './pages/ClienteMisPedidos';
 
 
 import AdminLogin from './pages/AdminLogin';
@@ -59,10 +61,12 @@ function AppContent() {
         <Route path="/cliente/home" element={<ClienteHome />} />
         <Route path="/cliente/catalogo" element={<ClienteCatalogo />} />
         <Route path="/cliente/carrito" element={<ClienteCarrito />} />
+        <Route path="/cliente/checkout" element={<ClienteCheckout />} />
         <Route path="/cliente/solicitud" element={<ClienteSolicitud />} />
         <Route path="/cliente/capacitacion" element={<ClienteCapacitacion />} />
         <Route path="/cliente/login" element={<ClienteLogin />} />
         <Route path="/cliente/verificar-pago" element={<ClienteVerificarPago />} />
+        <Route path="/cliente/mis-pedidos" element={<ClienteMisPedidos />} />
 
 
         <Route path="/admin" element={<AdminLogin />} />

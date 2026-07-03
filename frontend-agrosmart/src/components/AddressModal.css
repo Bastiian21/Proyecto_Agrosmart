@@ -1,0 +1,153 @@
+/* ============================================================
+   PANEL DE INSTRUMENTOS — mismo tema técnico que el checkout
+   ============================================================ */
+.addr-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(4px);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.addr-modal {
+  --bg: #001428;
+  --surface: #00122e;
+  --surface-2: #00182e;
+  --ink: #f1f5f9;
+  --dim: #94a3b8;
+  --accent: #00ddeb;
+  --accent-ink: #00122e;
+  --line: rgba(255,255,255,0.1);
+  --danger: #ff6b5e;
+
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  animation: addrSlideIn 0.15s ease-out;
+}
+
+@keyframes addrSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.addr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.addr-header h3 {
+  margin: 0; font-size: 0.72rem; color: var(--dim); font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+.addr-close {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  width: 28px; height: 28px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: border-color 0.15s, color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.addr-close:hover { border-color: var(--danger); color: var(--danger); }
+
+.addr-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.addr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.addr-field { display: flex; flex-direction: column; gap: 6px; }
+.addr-field label {
+  font-size: 0.68rem; font-weight: 700;
+  color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em;
+  font-family: ui-monospace, monospace;
+}
+.addr-hint { font-size: 0.74rem; color: var(--dim); }
+.addr-field input,
+.addr-field select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 11px 12px;
+  color: var(--ink);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%; box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.addr-field input:focus,
+.addr-field select:focus { border-color: var(--accent); }
+.addr-field select option { background: var(--bg); color: var(--ink); }
+.addr-field select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.addr-checkbox {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 0.84rem; color: var(--dim); cursor: pointer;
+}
+.addr-checkbox input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+.addr-error { font-size: 0.8rem; color: var(--danger); margin: 0; }
+
+.addr-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.btn-addr-cancelar {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s;
+}
+.btn-addr-cancelar:hover { border-color: var(--dim); color: var(--ink); }
+
+.btn-addr-guardar {
+  background: var(--accent);
+  border: none;
+  color: var(--accent-ink);
+  font-weight: 700;
+  padding: 11px 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: box-shadow 0.15s;
+  font-family: ui-monospace, monospace;
+}
+.btn-addr-guardar:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--accent); }
+.btn-addr-guardar:disabled { opacity: 0.5; cursor: not-allowed; }

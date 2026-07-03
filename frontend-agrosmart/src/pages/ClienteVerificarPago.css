@@ -1,7 +1,12 @@
 
 .contenedor-pagina-verificacion {
   min-height: 100vh;
-  background-color: #000b18;
+  background-color: #00122e;
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(135deg, #00122e 0%, #001d3d 40%, #004d2e 100%);
+  background-size: 25px 25px, 100% 100%;
+  background-attachment: fixed;
   position: relative;
   color: white;
   display: flex;

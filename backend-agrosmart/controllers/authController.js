@@ -38,7 +38,19 @@ const login = async (req, res) => {
         res.json({
             mensaje: 'Login exitoso',
             token,
-            usuario: { id: usuario.id, nombre: usuario.nombre_completo, rol: usuario.rol }
+            usuario: {
+                id: usuario.id,
+                nombre: usuario.nombre_completo,
+                email: usuario.email,
+                telefono: usuario.telefono,
+                rol: usuario.rol,
+                direccion_region: usuario.direccion_region,
+                direccion_comuna: usuario.direccion_comuna,
+                direccion_county_code: usuario.direccion_county_code,
+                direccion_calle: usuario.direccion_calle,
+                direccion_numero: usuario.direccion_numero,
+                direccion_depto: usuario.direccion_depto,
+            }
         });
     } catch (error) {
         console.error("🚨 ERROR EN LOGIN:", error);
@@ -46,4 +58,20 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { registro, login };
+const actualizarDireccion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { region, comuna, county_code, calle, numero, depto } = req.body;
+        if (!region || !comuna || !calle || !numero) {
+            return res.status(400).json({ error: 'Faltan datos de la dirección.' });
+        }
+        const usuario = await usuarioModel.updateDireccion(id, { region, comuna, county_code: county_code || null, calle, numero, depto });
+        if (!usuario) return res.status(404).json({ error: 'Usuario no encontrado.' });
+        res.json({ mensaje: 'Dirección actualizada', usuario });
+    } catch (error) {
+        console.error("🚨 ERROR AL ACTUALIZAR DIRECCIÓN:", error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+};
+
+module.exports = { registro, login, actualizarDireccion };

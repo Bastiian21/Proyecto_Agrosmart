@@ -5,21 +5,19 @@
   display: flex;
   flex-direction: column;
   color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: clip;
-  background-color: #000b18;
+  background-color: #001428;
   position: relative;
-
-
-
   background-image:
-    linear-gradient(to right, rgba(0, 11, 24, 0.95) 0%, rgba(0, 11, 24, 0.7) 40%, rgba(0, 11, 24, 0.2) 100%),
+    radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 18, 46, 0.97) 0%, rgba(0, 18, 46, 0.72) 40%, rgba(0, 15, 35, 0.22) 100%),
     url('../assets/Fondo-solicitud.png');
-  background-size: cover;
-  background-position: left center;
+  background-size: 25px 25px, 100% 100%, cover;
+  background-position: 0 0, center, left center;
   background-attachment: fixed;
 }
-.container-lg { width: 95%; max-width: 1400px; margin: 0 auto; }
+.sol-container { width: 95%; max-width: 1400px; margin: 0 auto; }
 .text-green { color: #28C76F; }
 
 .solicitud-split-container {
@@ -136,8 +134,23 @@
 
 
 .submit-container { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px; }
-.full-width { width: 100%; justify-content: center; padding: 15px; font-size: 1.1rem; }
+.full-width { width: 100%; justify-content: center; }
 .submit-hint { font-size: 0.85rem; color: #64748b; text-align: center; }
+
+.submit-container .view-posts-btn.full-width {
+  padding: 13px 22px;
+  font-size: 0.95rem;
+  gap: 10px;
+  border-radius: 10px;
+}
+.submit-container .btn-icon {
+  padding: 5px;
+  border-radius: 8px;
+}
+.submit-container .btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
 
 
 

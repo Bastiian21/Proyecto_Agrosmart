@@ -8,5 +8,6 @@ router.get('/stats', ventaController.obtenerEstadisticas);
 
 router.get('/productos', ventaController.ventasProductos);
 router.get('/cursos', ventaController.ventasCursos);
+router.get('/mis-pedidos/:usuario_id', ventaController.misPedidos);
 
 module.exports = router;

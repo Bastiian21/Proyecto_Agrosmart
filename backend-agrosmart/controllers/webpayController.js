@@ -10,8 +10,8 @@ const iniciarPago = async (req, res) => {
     try {
         const { monto, sessionId, ordenCompra } = req.body;
 
-
-        const returnUrl = 'http://localhost:3000/api/webpay/retorno';
+        const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+        const returnUrl = `${backendUrl}/api/webpay/retorno`;
 
         const createResponse = await tx.create(ordenCompra, sessionId, monto, returnUrl);
         res.json({ url: createResponse.url, token: createResponse.token });
@@ -29,13 +29,13 @@ const retornoWebpay = (req, res) => {
 
     const tbk_token = req.body?.TBK_TOKEN || req.query?.TBK_TOKEN;
 
-    if (!token_ws || tbk_token) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-        return res.redirect('http://localhost:5173/cliente/carrito?pago=cancelado');
+    if (!token_ws || tbk_token) {
+        return res.redirect(`${frontendUrl}/cliente/carrito?pago=cancelado`);
     }
 
-
-    res.redirect(`http://localhost:5173/cliente/verificar-pago?token_ws=${token_ws}`);
+    res.redirect(`${frontendUrl}/cliente/verificar-pago?token_ws=${token_ws}`);
 };
 const confirmarPago = async (req, res) => {
     try {

@@ -1,7 +1,8 @@
 const pool = require('../config/db');
+const chileexpress = require('../services/chileexpressService');
 
 const registrarVenta = async (req, res) => {
-    const { usuario_id, total, items } = req.body;
+    const { usuario_id, total, items, metodo_entrega, direccion_envio, costo_envio, service_type } = req.body;
 
     if (!items || items.length === 0) {
         return res.status(400).json({ error: 'El carrito está vacío.' });
@@ -10,16 +11,25 @@ const registrarVenta = async (req, res) => {
         return res.status(400).json({ error: 'Debe estar logueado para realizar una compra.' });
     }
 
+    const esEnvio = metodo_entrega === 'Chile Express';
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
         const ventaRes = await client.query(`
-            INSERT INTO ventas (usuario_id, total, metodo_entrega, sucursal, estado)
-            VALUES ($1, $2, 'Retiro en Tienda', 'Rancagua (Casa Matriz)', 'Pendiente de Retiro')
+            INSERT INTO ventas (usuario_id, total, metodo_entrega, sucursal, estado, direccion_envio, costo_envio)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING id;
-        `, [usuario_id, total]);
+        `, [
+            usuario_id,
+            total,
+            esEnvio ? 'Chile Express' : 'Retiro en Tienda',
+            esEnvio ? null : 'Rancagua (Casa Matriz)',
+            esEnvio ? 'En Preparación' : 'Pendiente de Retiro',
+            esEnvio ? JSON.stringify(direccion_envio) : null,
+            esEnvio ? (costo_envio || 0) : 0,
+        ]);
         const ventaId = ventaRes.rows[0].id;
 
         for (const item of items) {
@@ -67,7 +77,45 @@ const registrarVenta = async (req, res) => {
         }
 
         await client.query('COMMIT');
-        res.status(201).json({ success: true, mensaje: 'Venta registrada.', ventaId });
+
+        // Si es envío Chile Express, crear guía (en background, no bloquea la respuesta)
+        let trackingCode = null;
+        let trackingUrl = null;
+        if (esEnvio && direccion_envio && process.env.CHILEX_ENVIOS_API_KEY) {
+            try {
+                const pesoEstimado = Math.max(items.reduce((acc, i) => acc + (i.cantidad || 1) * 0.5, 0), 0.5);
+                const guia = await chileexpress.crearGuia({
+                    ventaId,
+                    destinatario: {
+                        nombre: direccion_envio.nombre_destinatario || '',
+                        email: direccion_envio.email || '',
+                        telefono: direccion_envio.telefono || '',
+                    },
+                    direccionDestino: {
+                        countyCode: direccion_envio.county_code,
+                        calle: direccion_envio.calle,
+                        numero: direccion_envio.numero,
+                        depto: direccion_envio.depto || '',
+                    },
+                    pesoKg: pesoEstimado,
+                    valorDeclarado: total,
+                    serviceType: service_type || 3,
+                });
+                trackingCode = guia.od;
+                trackingUrl = guia.trackingUrl;
+                // Guardar tracking en la venta
+                if (trackingCode) {
+                    await pool.query(
+                        'UPDATE ventas SET tracking_code = $1, tracking_url = $2 WHERE id = $3',
+                        [trackingCode, trackingUrl, ventaId]
+                    );
+                }
+            } catch (errGuia) {
+                console.warn('No se pudo crear guía Chile Express:', errGuia.message);
+            }
+        }
+
+        res.status(201).json({ success: true, mensaje: 'Venta registrada.', ventaId, trackingCode, trackingUrl });
 
     } catch (error) {
         await client.query('ROLLBACK');
@@ -276,10 +324,54 @@ const listarVentas = async (req, res) => {
     }
 };
 
+const misPedidos = async (req, res) => {
+    const { usuario_id } = req.params;
+    try {
+        const { rows: ventas } = await pool.query(`
+            SELECT v.id, v.total, v.estado, v.fecha, v.metodo_entrega, v.sucursal,
+                   v.direccion_envio, v.costo_envio, v.tracking_code, v.tracking_url,
+                   v.fecha_entrega_estimada
+            FROM ventas v
+            WHERE v.usuario_id = $1
+            ORDER BY v.fecha DESC
+        `, [usuario_id]);
+
+        // Para cada venta, traer sus items (productos + cursos)
+        const pedidosCompletos = await Promise.all(ventas.map(async (v) => {
+            const { rows: productos } = await pool.query(`
+                SELECT dv.cantidad, dv.precio_unitario,
+                       p.nombre, p.sku, p.imagen_url, p.categoria
+                FROM detalle_ventas dv
+                JOIN productos p ON dv.producto_id = p.id
+                WHERE dv.venta_id = $1
+            `, [v.id]);
+
+            const { rows: cursos } = await pool.query(`
+                SELECT ic.cantidad, ic.precio_pagado AS precio_unitario,
+                       c.nombre, c.sku, c.imagen_url, c.categoria
+                FROM inscripciones_cursos ic
+                JOIN cursos c ON ic.curso_id = c.id
+                WHERE ic.venta_id = $1
+            `, [v.id]).catch(() => ({ rows: [] }));
+
+            return {
+                ...v,
+                items: [...productos, ...cursos],
+            };
+        }));
+
+        res.json(pedidosCompletos);
+    } catch (error) {
+        console.error('Error mis pedidos:', error);
+        res.status(500).json({ error: 'Error al obtener pedidos.' });
+    }
+};
+
 module.exports = {
     registrarVenta,
     listarVentas,
     obtenerEstadisticas,
     ventasProductos,
     ventasCursos,
+    misPedidos,
 };

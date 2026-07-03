@@ -127,7 +127,7 @@ function ClienteSolicitud() {
     <div className="solicitud-page-container animacion-portal-entrada">
       <ClientNavbar />
 
-      <div className="solicitud-split-container container-lg">
+      <div className="solicitud-split-container sol-container">
 
         <div className="solicitud-left-col">
           <span className="sol-tag-title">— SOPORTE TÉCNICO</span>

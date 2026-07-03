@@ -57,12 +57,12 @@ function ClienteCapacitacion() {
   const esGratuito = (c) => Number(c.precio_clp) === 0;
 
   return (
-    <div className="capacitacion-page-container animacion-portal-entrada">
+    <div className="capacitacion-page-container cap-animacion-entrada">
       <ClientNavbar />
 
       <section className="cap-hero-section">
         <div className="cap-hero-overlay"></div>
-        <div className="cap-hero-content container-lg">
+        <div className="cap-hero-content cap-container">
           <span className="cap-tag-title">CENTRO DE ESTUDIOS AGRÍCOLAS</span>
           <h1 className="cap-main-title">Potencia tu campo con <span className="text-gradient">capacitación</span></h1>
           <p className="cap-description">
@@ -70,15 +70,15 @@ function ClienteCapacitacion() {
           </p>
 
           <div className="cap-stats-row glow-cyan">
-            <div className="cap-stat"><span className="stat-icon">📚</span><span className="stat-num">{cursos.length}</span><span className="stat-label">Cursos</span></div>
-            <div className="cap-stat"><span className="stat-icon">👨‍🏫</span><span className="stat-num">{new Set(cursos.map(c => c.instructor)).size}</span><span className="stat-label">Instructores</span></div>
-            <div className="cap-stat"><span className="stat-icon">🎓</span><span className="stat-num">350</span><span className="stat-label">Graduados</span></div>
-            <div className="cap-stat"><span className="stat-icon">⏱️</span><span className="stat-num">{cursos.reduce((acc, c) => acc + (c.horas || 0), 0)}+</span><span className="stat-label">Horas Contenido</span></div>
+            <div className="cap-stat"><span className="stat-icon">📚</span><span className="cap-stat-num">{cursos.length}</span><span className="cap-stat-label">Cursos</span></div>
+            <div className="cap-stat"><span className="stat-icon">👨‍🏫</span><span className="cap-stat-num">{new Set(cursos.map(c => c.instructor)).size}</span><span className="cap-stat-label">Instructores</span></div>
+            <div className="cap-stat"><span className="stat-icon">🎓</span><span className="cap-stat-num">350</span><span className="cap-stat-label">Graduados</span></div>
+            <div className="cap-stat"><span className="stat-icon">⏱️</span><span className="cap-stat-num">{cursos.reduce((acc, c) => acc + (c.horas || 0), 0)}+</span><span className="cap-stat-label">Horas Contenido</span></div>
           </div>
         </div>
       </section>
 
-      <section className="cap-controls-section container-lg">
+      <section className="cap-controls-section cap-container">
         <div className="cap-search-wrapper">
           <div className="cap-search-container glow-cyan">
             <svg className="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -109,7 +109,7 @@ function ClienteCapacitacion() {
       </section>
 
       {feedback && (
-        <div className="container-lg" style={{ marginTop: '20px' }}>
+        <div className="cap-container" style={{ marginTop: '20px' }}>
           <div style={{
             background: 'rgba(40, 199, 111, 0.12)', border: '1px solid #28C76F',
             color: '#28C76F', padding: '12px 20px', borderRadius: '10px',
@@ -120,7 +120,7 @@ function ClienteCapacitacion() {
         </div>
       )}
 
-      <section className="cap-grid-section container-lg">
+      <section className="cap-grid-section cap-container">
         <div className="cap-product-grid">
           {cursosFiltrados.length === 0 ? (
             <h3 style={{color: '#94a3b8', textAlign: 'center', width: '100%', padding: '40px 0'}}>

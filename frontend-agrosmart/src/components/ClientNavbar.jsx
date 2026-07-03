@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   ]},
   { label: "Solicitud en terreno", to: "/cliente/solicitud", disabled: false },
   { label: "Capacitación", to: "/cliente/capacitacion", disabled: false },
-  { label: "Planificador", to: "#", disabled: true },
+  { label: "Mis Pedidos", to: "/cliente/mis-pedidos", disabled: false },
 ];
 
 function ClientNavbar() {
