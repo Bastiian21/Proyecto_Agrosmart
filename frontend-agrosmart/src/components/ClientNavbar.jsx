@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import logo from '../assets/Logo.png';
 import CarroLateral from './CarroLateral';
 import './ClientNavbar.css';
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import logo from "./assets/logo.png";
+import logo from "./assets/Logo.png";
 
 
 import { CartProvider } from './context/CartContext';
