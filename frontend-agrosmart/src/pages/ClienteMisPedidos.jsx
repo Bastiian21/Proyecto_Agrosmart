@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ClientNavbar from '../components/ClientNavbar';
+import { clienteFetch } from '../services/api';
 import './ClienteMisPedidos.css';
 
 const ESTADO_CONFIG = {
@@ -180,7 +181,7 @@ export default function ClienteMisPedidos() {
 
     useEffect(() => {
         if (!usuario?.id) { navigate('/cliente/login'); return; }
-        fetch(`/api/ventas/mis-pedidos/${usuario.id}`)
+        clienteFetch(`/api/ventas/mis-pedidos/${usuario.id}`)
             .then(r => r.json())
             .then(data => { setPedidos(Array.isArray(data) ? data : []); })
             .catch(() => setPedidos([]))

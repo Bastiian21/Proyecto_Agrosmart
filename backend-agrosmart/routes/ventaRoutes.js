@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const ventaController = require('../controllers/ventaController');
+const { verifyToken, requireAdmin, requireSelfOrAdmin } = require('../middlewares/auth');
 
-router.post('/', ventaController.registrarVenta);
-router.get('/', ventaController.listarVentas);
-router.get('/stats', ventaController.obtenerEstadisticas);
-
-router.get('/productos', ventaController.ventasProductos);
-router.get('/cursos', ventaController.ventasCursos);
-router.get('/mis-pedidos/:usuario_id', ventaController.misPedidos);
+router.post('/', verifyToken, ventaController.registrarVenta);
+router.get('/', requireAdmin, ventaController.listarVentas);
+router.get('/stats', requireAdmin, ventaController.obtenerEstadisticas);
+router.get('/productos', requireAdmin, ventaController.ventasProductos);
+router.get('/cursos', requireAdmin, ventaController.ventasCursos);
+router.get('/mis-pedidos/:usuario_id', requireSelfOrAdmin('usuario_id'), ventaController.misPedidos);
 
 module.exports = router;

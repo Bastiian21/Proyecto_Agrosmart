@@ -27,16 +27,59 @@ pnpm preview    # previsualización de la compilación de producción
 
 **Windows:** Para matar procesos node usar PowerShell (`Stop-Process -Id <pid> -Force`). `pkill` desde Git Bash falla silenciosamente en Windows. Para encontrar el PID: `Get-NetTCPConnection -LocalPort 5173 -State Listen`.
 
-No hay pruebas automatizadas en ninguno de los dos paquetes.
+### Pruebas (solo backend)
+Jest + supertest, en `backend-agrosmart/tests/`. **No son pruebas unitarias pese al comentario en los archivos: son pruebas de integración que hacen HTTP contra `http://localhost:3000` hardcodeado y escriben en la base de datos real.** El backend debe estar corriendo antes de invocarlas, o todas fallan por conexión rechazada.
+
+```bash
+cd backend-agrosmart
+pnpm test                            # jest --runInBand --verbose (todo)
+npx jest tests/auth.test.js          # un solo archivo
+npx jest -t "CA027"                  # un solo caso por nombre
+```
+`--runInBand` es obligatorio: los tests comparten estado de la base de datos (stock de productos, emails únicos) y en paralelo se pisan entre sí. No hay `jest.config` — se usan los defaults.
+
+Los archivos mapean componentes a los casos de prueba de la Evaluación 3 (`3.1.4 Casos de Prueba - AgroSmart.xlsx`): `auth.test.js` = C1/CA001-CA006, `ventas.test.js` = C5/CA025-CA030, `envios.test.js` = C8/CA044-CA045. Al agregar tests, mantener la convención de nombre `CAxxx - debería ...`.
+
+**Pruebas de autorización añadidas fuera del Excel**: `CA006c`/`CA006d` (auth) y `AUTZ01`-`AUTZ05` (ventas) cubren el middleware JWT. No están en el documento de casos de prueba — si hay que entregar ese Excel, considerar agregarlas.
+
+Las suites hacen login para obtener token: `ventas.test.js` se loguea como admin (`admin@agrosmart.cl` / `admin123`, override con `TEST_ADMIN_EMAIL`/`TEST_ADMIN_PASSWORD`) para crear el producto de prueba y leer `/stats`, y como cliente para registrar ventas. **Si `sql/admin_user.sql` no se corrió en la base, el `beforeAll` falla con un mensaje explícito.** Ojo: el registro **no** devuelve token, solo el login.
+
+El producto de prueba que crea `ventas.test.js` **queda en la base**: CA025 le asocia una venta y la FK impide borrarlo en el `afterAll`. Cada corrida completa deja uno más.
+
+`tests/helpers.js` genera RUTs chilenos válidos (con dígito verificador calculado) y sufijos aleatorios para emails/SKUs, porque `usuarios.rut` y `usuarios.email` son únicos y los tests no limpian lo que insertan — cada corrida deja usuarios nuevos en la BD.
+
+El frontend no tiene pruebas.
 
 ### Despliegue (`deploy/`)
-Guía y scripts para desplegar en AWS Academy (EC2 + RDS):
+Hay **dos destinos posibles**; el objetivo actual es Vercel + Supabase.
+
 ```
-deploy/AWS-DEPLOY.md    — guía paso a paso (RDS PostgreSQL + EC2 + Nginx + PM2)
-deploy/database-full.sql — dump completo del esquema para inicializar la BD
-deploy/setup-aws.sh      — script que instala Node/pnpm/PM2/Nginx, clona el repo, compila y levanta el backend con PM2
+deploy/VERCEL-SUPABASE.md — guía Vercel (frontend + función serverless) + Supabase (BD + Storage)
+deploy/AWS-DEPLOY.md      — guía AWS Academy (RDS PostgreSQL + EC2 + Nginx + PM2)
+deploy/database-full.sql  — dump completo (esquema + datos semilla) para inicializar la BD
+deploy/setup-aws.sh       — script de instalación para el EC2
 ```
-Redeploy tras cambios: `git pull` en el EC2, `pnpm install` + `pm2 restart agrosmart-api` en el backend, `pnpm build` en el frontend (servido por Nginx).
+
+**Vercel** (destino actual): un solo proyecto sirve `frontend-agrosmart/dist` como
+estático y `api/index.js` como función serverless. Redeploy = `git push` (Vercel
+compila solo). Config en `vercel.json` de la raíz.
+
+**AWS** (montaje anterior): `git pull` en el EC2, `pnpm install` + `pm2 restart
+agrosmart-api`, `pnpm build` en el frontend (servido por Nginx).
+
+#### Restricciones de serverless (por qué el código está así)
+En Vercel no hay proceso persistente ni disco escribible. Tres consecuencias que
+NO se deben revertir:
+- **`index.js` solo llama a `app.listen()` bajo `require.main === module`** y exporta
+  la app. `api/index.js` la importa. Si se vuelve a llamar `listen()` incondicionalmente,
+  la función serverless deja de responder.
+- **`middlewares/upload.js` usa `multer.memoryStorage()`**, no `diskStorage`. La versión
+  anterior además hacía `fs.mkdirSync()` al importar el módulo, lo que reventaba la carga
+  de toda la API en un FS de solo lectura.
+- **El `package.json` de la raíz duplica las dependencias del backend.** Vercel instala
+  las deps de la raíz y los `require()` de `backend-agrosmart/` resuelven hacia arriba
+  hasta ese `node_modules`. Al agregar una dependencia al backend, **hay que agregarla
+  también en la raíz** o la función falla en producción aunque local funcione.
 
 ## Configuración del Entorno
 
@@ -59,6 +102,21 @@ CHILEX_COTIZADOR_API_KEY=f6f5f0c256174395ade456720059c7ed
 CHILEX_ENVIOS_API_KEY=147eceaeca9d4999b88c0a2ae15a9023
 CHILEX_BASE_URL=https://testservices.chilexpress.cl/v1   # omitir en producción → usar URL prod
 ```
+`DB_PORT` y `CHILEX_BASE_URL` no están en el `.env` actual — ambas caen a su valor por defecto (`5432` vía `pg`, y la URL de pruebas en `chileexpressService.js`).
+
+Variables adicionales que lee el backend:
+```
+DB_SSL=false                  # solo en local; ver abajo
+DATABASE_URL=                 # connection string; si está, gana sobre DB_USER/DB_HOST/...
+DB_POOL_MAX=                  # opcional; default 10 local / 2 en Vercel
+SUPABASE_URL=                 # Storage de imágenes
+SUPABASE_SERVICE_ROLE_KEY=    # key de servidor — NUNCA exponer al frontend
+SUPABASE_BUCKET=agrosmart
+```
+
+**`DB_SSL` — SSL activo por defecto.** `config/db.js` usa `ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false }`, es decir, **solo `DB_SSL=false` exacto lo desactiva**; ausente o cualquier otro valor deja SSL encendido. Supabase y RDS lo exigen. Contra el PostgreSQL local, que no lo soporta, el backend muere al arrancar con `The server does not support SSL connections` — por eso el `.env` de desarrollo lleva `DB_SSL=false` y en Vercel la variable simplemente no se define.
+
+`config/db.js` detecta `process.env.VERCEL` para achicar el pool y omitir el chequeo de conexión del arranque (agregaría una conexión por cold start solo para loguear).
 
 ## Arquitectura
 
@@ -74,7 +132,14 @@ middlewares/upload.js   — multer; enruta imágenes a uploads/productos/ o uplo
 services/chileexpressService.js — cliente para la API de Chile Express
 uploads/                — Archivos estáticos servidos en /api/uploads
 migrations/             — Scripts SQL ejecutados manualmente en la BD
+sql/                    — Scripts de seed/setup de un solo uso (ver abajo)
+tests/                  — Jest + supertest contra el servidor en vivo
 ```
+
+`sql/` son scripts idempotentes-a-mano, ya ejecutados, que se corren manualmente en DBeaver (no hay runner de migraciones):
+- `admin_user.sql` — crea el admin del backoffice (`admin@agrosmart.cl` / `admin123`, hash bcrypt ya generado). Hace `DELETE` del email antes de insertar.
+- `inscripciones_cursos.sql` — crea la tabla `inscripciones_cursos`. **Empieza con `DROP TABLE IF EXISTS ... CASCADE`** — no re-ejecutar sobre una BD con datos.
+- `cursos_seed.sql` — datos de ejemplo de cursos.
 
 Rutas de la API:
 - `POST /api/auth/registro`, `POST /api/auth/login` — Autenticación con JWT (hash con bcryptjs). El login devuelve `usuario: { id, nombre, email, telefono, rol, direccion_region, direccion_comuna, direccion_county_code, direccion_calle, direccion_numero, direccion_depto }`, precargado en `localStorage.usuarioAgrosmart`
@@ -89,7 +154,30 @@ Rutas de la API:
 - `GET /api/envios/comunas?region=13` — listado de comunas por región
 - `GET /api/envios/rastrear/:od` — rastreo en tiempo real de un envío
 
-**Importante:** Ninguna ruta de la API aplica middleware de autenticación JWT en el servidor. La protección del backoffice es solo en el cliente (localStorage).
+### Autenticación y autorización (`middlewares/auth.js`)
+
+El login firma un JWT `{ id, rol }` con 24 h de vigencia. `middlewares/auth.js` lo verifica **en el servidor** — la protección por `localStorage` del Backoffice es solo cosmética y no protege la API.
+
+- `verifyToken` — exige `Authorization: Bearer <token>` válido; deja el payload en `req.usuario`.
+- `requireAdmin` — además exige `rol === 'admin'`.
+- `requireSelfOrAdmin(param)` — el `:param` de la URL debe ser el propio usuario del token, o admin.
+
+Reparto por ruta:
+
+| Acceso | Rutas |
+|---|---|
+| **Público** | `POST /api/auth/registro`, `POST /api/auth/login`, todos los `GET` de `/api/productos` y `/api/cursos`, todo `/api/envios/*`, todo `/api/webpay/*` |
+| **`verifyToken`** (cliente logueado) | `POST /api/ventas`, `POST /api/solicitudes` |
+| **`requireSelfOrAdmin`** | `PUT /api/auth/direccion/:id`, `GET /api/ventas/mis-pedidos/:usuario_id` |
+| **`requireAdmin`** | `POST/PUT/DELETE` de `/api/productos` y `/api/cursos` (incl. imagen), `GET /api/ventas`, `/api/ventas/stats`, `/api/ventas/productos`, `/api/ventas/cursos`, `GET /api/solicitudes`, `PUT /api/solicitudes/:id` |
+
+**Webpay debe seguir público**: Transbank hace `POST /api/webpay/retorno` desde sus servidores, sin token. Los `GET` del catálogo también, o el portal del cliente deja de cargar sin login.
+
+`requireSelfOrAdmin` cierra dos IDOR que existían: cualquiera podía leer los pedidos de otro (`mis-pedidos/:usuario_id`) o sobrescribir su dirección (`direccion/:id`) con solo cambiar el id de la URL.
+
+**Frontend** (`src/services/api.js`): `adminFetch` y `clienteFetch` envuelven `fetch` e inyectan el token desde `localStorage`. Las claves son distintas y conviven en el mismo navegador: `adminTokenAgrosmart` (AdminLogin) y `tokenAgrosmart` (ClienteLogin). `Backoffice.jsx` usa `adminFetch` en **todas** sus llamadas; `ClienteVerificarPago`, `ClienteMisPedidos`, `ClienteSolicitud` y `AddressModal` usan `clienteFetch`. Los wrappers no tocan `Content-Type` a propósito: la subida de imagen manda `FormData` y el navegador debe poner el boundary multipart.
+
+Al agregar una ruta de escritura, aplicarle `requireAdmin`/`verifyToken` y llamarla desde el frontend con el wrapper correspondiente.
 
 ### Esquema de Base de Datos
 
@@ -132,6 +220,15 @@ direccion_depto       VARCHAR(50)
 ```
 Se completan la primera vez que el cliente guarda una dirección en `AddressModal` (checkbox "Guardar como dirección principal"); antes de eso vienen `null`.
 
+Columnas de identidad (`usuarioModel.createUser`): `nombre_completo`, `rut`, `email`, `telefono`, `password_hash`, `rol` (default `'Agricultor'`; el admin usa `'admin'`). **`rut` y `email` son únicos** — de ahí los helpers aleatorios en los tests. Ojo con el desajuste de nombres: la BD guarda `nombre_completo`, `POST /api/auth/registro` lo recibe con ese mismo nombre, pero el objeto `usuario` del login y `localStorage.usuarioAgrosmart` exponen la propiedad como `nombre`.
+
+**Tabla `inscripciones_cursos`** (`sql/inscripciones_cursos.sql`) — registra la venta de cursos:
+```sql
+id, venta_id INT REFERENCES ventas(id) ON DELETE SET NULL, usuario_id INT REFERENCES usuarios(id),
+curso_id INT REFERENCES cursos(id), cantidad INT DEFAULT 1, precio_pagado NUMERIC(10,2) DEFAULT 0,
+fecha_inscripcion TIMESTAMP DEFAULT CURRENT_TIMESTAMP, estado VARCHAR(30) DEFAULT 'Inscrito'
+```
+
 ### Chile Express (`services/chileexpressService.js`)
 Autenticación: **Azure API Management** — header `Ocp-Apim-Subscription-Key`, una key distinta por grupo de servicios (`CHILEX_COBERTURA_API_KEY`, `CHILEX_COTIZADOR_API_KEY`, `CHILEX_ENVIOS_API_KEY`). **No es OAuth2.**
 
@@ -142,12 +239,18 @@ La URL base lee `process.env.CHILEX_BASE_URL` con fallback a `https://testservic
 
 **Modo de respaldo (`simulado: true`)**: `getComunas` y `cotizar` nunca lanzan si Chile Express no responde — devuelven datos locales (`COMUNAS_FALLBACK` por región, tarifa estimada por peso/valor declarado en `cotizarSimulado`) y marcan la respuesta con `simulado: true`. El frontend (`AddressModal`, `ClienteCheckout`) muestra un aviso informativo (no bloqueante) cuando esto ocurre, para que el flujo de compra nunca se bloquee por la disponibilidad del ambiente de pruebas de Chile Express. `buscarComuna` igual nunca retorna `null`: sintetiza un `countyCode` con `slugCode(nombre)` si no hay match real. `getComunas` devuelve `{ comunas, simulado }` (no un array plano).
 
-### Patrón de Subida de Imágenes
-El middleware `multer` (`middlewares/upload.js`) lee `req.params.tipo` para enrutar los archivos:
-- `tipo === 'cursos'` → `uploads/cursos/`
-- cualquier otro valor → `uploads/productos/`
+### Patrón de Subida de Imágenes (Supabase Storage)
+`multer` (`middlewares/upload.js`) usa **`memoryStorage`**: valida MIME (jpg/png/webp/gif, máx 5 MB) y deja el archivo en `req.file.buffer`. Desde ahí `services/storageService.js` lo sube al bucket de Supabase y devuelve la URL pública, que se guarda en `productos.imagen_url`.
 
-Los archivos se nombran `img-<timestamp>.<ext>`, validados por MIME (jpg/png/webp/gif, máx 5 MB) y servidos en `/api/uploads/`.
+- `subirImagen(buffer, mimetype, extension, carpeta)` → URL pública. Nombra `<carpeta>/img-<timestamp>.<ext>`.
+- `eliminarImagen(url)` → borra el objeto del bucket. **No lanza** si falla, e ignora URLs que no sean de este bucket (Unsplash, o las antiguas `/api/uploads/...`), para que limpiar la fila en la BD nunca quede bloqueado por el archivo.
+- `estaConfigurado()` → si faltan `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`, el endpoint responde **503** en vez de romper.
+
+`subirImagenProducto` busca el producto **antes** de subir (para no dejar archivos huérfanos si el id no existe) y borra la imagen anterior tras reemplazarla.
+
+**Solo existe upload para productos.** `cursoRoutes.js` no tiene ruta de imagen: los cursos usan URLs externas (Unsplash) cargadas por el semilla. La rama `tipo === 'cursos'` que existía en el multer viejo era código muerto.
+
+`app.use('/api/uploads', express.static(...))` sigue en `index.js` solo para archivos locales heredados; en Vercel ese directorio no existe y la ruta simplemente da 404.
 
 ### Frontend (`frontend-agrosmart/`)
 React 19 + Vite + React Router v7. Módulos ESM.
@@ -291,6 +394,7 @@ border: 1px solid color-mix(in srgb, var(--estado-color, #00ddeb) 40%, transpare
 - **Comparación de categorías**: siempre usar `.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')` + `.includes()` para manejar NFD/NFC en "Tecnología"
 - **Imagen como fill**: `position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover` + padre con `position: relative; overflow: hidden`
 - **Hero sin altura mínima**: no usar `min-height` + `align-items: center` en heroes con fondo — genera espacio vacío donde el fondo asoma sin degradado
-- **`package.json` raíz**: contiene dependencias residuales (`pptxgenjs`, `react-router-dom`) — ignorar; los manifiestos reales son `backend-agrosmart/package.json` y `frontend-agrosmart/package.json`
+- **`package.json` raíz**: ya no es residual. Es el manifiesto de la función serverless de Vercel y **duplica a propósito las dependencias del backend** (ver "Restricciones de serverless"). Se le quitaron `pptxgenjs` y `react-router-dom`, que no se usaban en ningún lado. Los manifiestos de desarrollo siguen siendo `backend-agrosmart/package.json` y `frontend-agrosmart/package.json`
+- **`pnpm lint` en el frontend falla desde antes de esta migración** (~48 errores en 32 archivos: `no-unused-vars`, `react-hooks/set-state-in-effect`, `__dirname` en `vite.config.js`). Es deuda preexistente, no la introdujo un cambio reciente. `pnpm build` sí pasa limpio, y es lo que corre Vercel
 - **Dimensiones Chile Express**: actualmente hardcodeadas a 20×20×20cm y ~0.5kg por ítem en `ventaController.js` — pendiente calcular por categoría de producto
 - **Patrón N+1 en `misPedidos`**: hace 2 queries por pedido (productos + cursos). Aceptable para volumen actual; a consolidar con JOIN cuando el volumen lo requiera

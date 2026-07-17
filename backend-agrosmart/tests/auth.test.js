@@ -12,6 +12,7 @@ describe('C1 - Autenticación y usuarios', () => {
     const rut = randomRut();
     const password = 'Abc.1234';
     let usuarioId;
+    let token;
 
     test('CA001 - debería registrar un usuario nuevo con datos válidos', async () => {
         const res = await request(BASE_URL)
@@ -77,6 +78,8 @@ describe('C1 - Autenticación y usuarios', () => {
         const payload = jwt.decode(res.body.token);
         console.log('\n    Token JWT recibido:', res.body.token);
         console.log('    Payload decodificado:', payload);
+
+        token = res.body.token;
     });
 
     test('CA005 - debería rechazar el login con contraseña incorrecta', async () => {
@@ -91,6 +94,7 @@ describe('C1 - Autenticación y usuarios', () => {
     test('CA006a - debería actualizar la dirección principal del usuario', async () => {
         const res = await request(BASE_URL)
             .put(`/api/auth/direccion/${usuarioId}`)
+            .set('Authorization', `Bearer ${token}`)
             .send({ region: '13', comuna: 'Providencia', county_code: 'PROVIDENCIA', calle: 'Los Aromos', numero: '123' });
 
         expect(res.status).toBe(200);
@@ -100,9 +104,36 @@ describe('C1 - Autenticación y usuarios', () => {
     test('CA006b - debería rechazar la actualización de dirección si falta un campo obligatorio', async () => {
         const res = await request(BASE_URL)
             .put(`/api/auth/direccion/${usuarioId}`)
+            .set('Authorization', `Bearer ${token}`)
             .send({ region: '13', comuna: 'Providencia', numero: '123' }); // falta "calle"
 
         expect(res.status).toBe(400);
         expect(res.body.error).toMatch(/Faltan datos/i);
+    });
+
+    test('CA006c - debería rechazar la actualización de dirección sin token', async () => {
+        const res = await request(BASE_URL)
+            .put(`/api/auth/direccion/${usuarioId}`)
+            .send({ region: '13', comuna: 'Providencia', calle: 'Los Aromos', numero: '123' });
+
+        expect(res.status).toBe(401);
+    });
+
+    test('CA006d - debería impedir modificar la dirección de otro usuario', async () => {
+        const otro = await request(BASE_URL).post('/api/auth/registro').send({
+            nombre_completo: 'Jest Ajeno',
+            rut: randomRut(),
+            email: `jest.ajeno${n}@agrosmart.cl`,
+            telefono: '+56944444444',
+            password,
+            rol: 'Agricultor',
+        });
+
+        const res = await request(BASE_URL)
+            .put(`/api/auth/direccion/${otro.body.usuario.id}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ region: '13', comuna: 'Providencia', calle: 'Hackeada', numero: '666' });
+
+        expect(res.status).toBe(403);
     });
 });

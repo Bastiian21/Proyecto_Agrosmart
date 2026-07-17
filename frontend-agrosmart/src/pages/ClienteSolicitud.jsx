@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ClientNavbar from '../components/ClientNavbar';
+import { clienteFetch } from '../services/api';
 import './ClienteSolicitud.css';
 
 const regionesChilenas = {
@@ -97,7 +98,7 @@ function ClienteSolicitud() {
     };
 
     try {
-      const response = await fetch('/api/solicitudes', {
+      const response = await clienteFetch('/api/solicitudes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

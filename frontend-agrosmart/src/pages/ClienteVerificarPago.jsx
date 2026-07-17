@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ClientNavbar from '../components/ClientNavbar';
 import { useCart } from '../context/CartContext';
+import { clienteFetch } from '../services/api';
 import './ClienteVerificarPago.css';
 
 function ClienteVerificarPago() {
@@ -45,7 +46,7 @@ function ClienteVerificarPago() {
           if (ordenPendienteStr) {
             const orden = JSON.parse(ordenPendienteStr);
 
-            const resVenta = await fetch('/api/ventas', {
+            const resVenta = await clienteFetch('/api/ventas', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(orden)

@@ -39,7 +39,11 @@ app.use('/api/cursos', cursoRoutes);
 app.use('/api/envios', envioRoutes);
 
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`=== Servidor Backend corriendo en: http://localhost:${PORT} ===`);
-});
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`=== Servidor Backend corriendo en: http://localhost:${PORT} ===`);
+    });
+}
+
+module.exports = app;

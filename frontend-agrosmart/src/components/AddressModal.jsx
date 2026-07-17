@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { clienteFetch } from '../services/api';
 import './AddressModal.css';
 
 export const REGIONES_CHILE = [
@@ -91,7 +92,7 @@ export default function AddressModal({ isOpen, onClose, onConfirm, usuarioId, di
             setGuardando(true);
             setError('');
             try {
-                const res = await fetch(`/api/auth/direccion/${usuarioId}`, {
+                const res = await clienteFetch(`/api/auth/direccion/${usuarioId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(form),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.png';
+import { adminFetch } from '../services/api';
 import './Backoffice.css';
 
 // Campos de ficha técnica por categoría
@@ -141,7 +142,7 @@ function Backoffice() {
   // ── Fetchers ─────────────────────────────────────────────────
   const fetchProductos = async () => {
     try {
-      const data = await (await fetch('/api/productos')).json();
+      const data = await (await adminFetch('/api/productos')).json();
       setProductos(data);
     } catch (e) { console.error(e); }
   };
@@ -149,7 +150,7 @@ function Backoffice() {
   const fetchDashboard = async () => {
     setLoadingDash(true);
     try {
-      const data = await (await fetch('/api/ventas/stats')).json();
+      const data = await (await adminFetch('/api/ventas/stats')).json();
       setDashboardStats(data);
     } catch (e) { console.error(e); setDashboardStats(null); }
     finally { setLoadingDash(false); }
@@ -164,7 +165,7 @@ function Backoffice() {
       const pc = new URLSearchParams();
       if (filtroVentaCur !== 'Todas') pc.append('categoria', filtroVentaCur);
       if (searchVentaCur) pc.append('q', searchVentaCur);
-      const [rP, rC] = await Promise.all([fetch(`/api/ventas/productos?${pp}`), fetch(`/api/ventas/cursos?${pc}`)]);
+      const [rP, rC] = await Promise.all([adminFetch(`/api/ventas/productos?${pp}`), adminFetch(`/api/ventas/cursos?${pc}`)]);
       if (rP.ok) setVentasProductosList(await rP.json());
       if (rC.ok) setVentasCursosList(await rC.json());
     } catch (e) { console.error(e); }
@@ -174,7 +175,7 @@ function Backoffice() {
   const fetchSolicitudes = async () => {
     setLoadingSol(true);
     try {
-      const data = await (await fetch('/api/solicitudes')).json();
+      const data = await (await adminFetch('/api/solicitudes')).json();
       setSolicitudes(Array.isArray(data) ? data : []);
     } catch (e) { setSolicitudes([]); }
     finally { setLoadingSol(false); }
@@ -182,7 +183,7 @@ function Backoffice() {
 
   const fetchCursos = async () => {
     try {
-      const data = await (await fetch('/api/cursos')).json();
+      const data = await (await adminFetch('/api/cursos')).json();
       setCursos(Array.isArray(data) ? data : []);
     } catch (e) { setCursos([]); }
   };
@@ -246,7 +247,7 @@ function Backoffice() {
     setShowModal(true);
     setLoadingDetalle(true);
     try {
-      const full = await (await fetch(`/api/productos/${prod.id}`)).json();
+      const full = await (await adminFetch(`/api/productos/${prod.id}`)).json();
       setFormData(prev => ({ ...prev, ...full, detalle: full.detalle || {} }));
     } catch (e) { console.error(e); }
     finally { setLoadingDetalle(false); }
@@ -256,7 +257,7 @@ function Backoffice() {
     if (!formData.id || !window.confirm('¿Eliminar la imagen actual?')) return;
     setEliminandoImg(true);
     try {
-      const res = await fetch(`/api/productos/${formData.id}/imagen`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/productos/${formData.id}/imagen`, { method: 'DELETE' });
       if (res.ok) { setField('imagen_url', ''); fetchProductos(); }
     } catch (e) { console.error(e); }
     finally { setEliminandoImg(false); }
@@ -267,7 +268,7 @@ function Backoffice() {
     const method = modalMode === 'add' ? 'POST' : 'PUT';
     const url    = modalMode === 'add' ? '/api/productos' : `/api/productos/${formData.id}`;
     try {
-      const res = await fetch(url, {
+      const res = await adminFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -278,7 +279,7 @@ function Backoffice() {
         if (productoFile && pid) {
           const fd = new FormData();
           fd.append('imagen', productoFile);
-          await fetch(`/api/productos/${pid}/imagen`, { method: 'POST', body: fd });
+          await adminFetch(`/api/productos/${pid}/imagen`, { method: 'POST', body: fd });
         }
         setShowModal(false);
         setProductoFile(null);
@@ -292,7 +293,7 @@ function Backoffice() {
   const handleDelete = async (id) => {
     if (!window.confirm('¿Eliminar este producto del catálogo?')) return;
     try {
-      const res = await fetch(`/api/productos/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/productos/${id}`, { method: 'DELETE' });
       if (res.ok) { alert('Producto eliminado.'); fetchProductos(); }
       else { const d = await res.json(); alert('⚠️ ' + d.error); }
     } catch (e) { console.error(e); }
@@ -312,7 +313,7 @@ function Backoffice() {
   const guardarSolicitud = async () => {
     setGuardando(true);
     try {
-      const res = await fetch(`/api/solicitudes/${modalSol.id}`, {
+      const res = await adminFetch(`/api/solicitudes/${modalSol.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formSol),
@@ -342,7 +343,7 @@ function Backoffice() {
     const method = cursoMode === 'add' ? 'POST' : 'PUT';
     const url    = cursoMode === 'add' ? '/api/cursos' : `/api/cursos/${formCurso.id}`;
     try {
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formCurso) });
+      const res = await adminFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formCurso) });
       if (res.ok) { setShowCursoModal(false); fetchCursos(); }
       else { const err = await res.json(); alert('Error: ' + (err.error || 'No se pudo guardar')); }
     } catch (e) { console.error(e); }
@@ -351,7 +352,7 @@ function Backoffice() {
   const handleDeleteCurso = async (id) => {
     if (!window.confirm('¿Eliminar este curso?')) return;
     try {
-      const res = await fetch(`/api/cursos/${id}`, { method: 'DELETE' });
+      const res = await adminFetch(`/api/cursos/${id}`, { method: 'DELETE' });
       if (res.ok) { alert('Curso eliminado.'); fetchCursos(); }
       else { const err = await res.json(); alert('⚠️ ' + err.error); }
     } catch (e) { console.error(e); }
